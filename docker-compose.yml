@@ -1,0 +1,38 @@
+version: '3'
+services:
+  wallet:
+    image: lepetitbloc\goacoind
+    restart: always
+    ports:
+      - 1947:1947
+      - 1948:1948 # allow to control your wallet from a remote `goacoin-cli` providing the appropriate `rpcallowip`
+    command: [
+      "-rpcuser=goacoinrpc",
+      "-rpcpassword=4VvDhcoqFUcZbmkWUMJz8P443WLfoaMmiREKSByJaT4j", # /!\ change this
+      "-rpcallowip=127.0.0.1",
+      "-server=1",
+      "-listen=0",
+      "-masternode=0",
+    ]
+    volumes:
+      - ./wallet/:/home/wallet/
+  masternode:
+    image: lepetitbloc\goacoind
+    restart: always
+    ports:
+      - 1947:1947
+      - 1948:1948
+    command: [
+      "-server=0",
+      "-listen=1",
+      "-masternode=1",
+      "-masternodeprivkey=YourMasternodePrivKey",
+      "-addnode=54.37.74.53",
+      "-addnode=207.148.66.170",
+      "-addnode=194.67.220.255",
+      "-addnode=45.76.190.44",
+      "-addnode=80.208.227.101",
+      "-addnode=185.92.223.139",
+    ]
+    volumes:
+      - ./masternode/:/home/wallet/

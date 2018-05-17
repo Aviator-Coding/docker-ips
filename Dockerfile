@@ -1,53 +1,47 @@
-ARG BDB_VERSION="4.8.30.NC"
+FROM ubuntu:16.04
 
-FROM lepetitbloc/bdb:$BDB_VERSION
+RUN apt-get update && \
+    apt-get --no-install-recommends --yes install \
+         git \
+         automake \
+         build-essential \
+         libtool \
+         autotools-dev \
+         autoconf \
+         pkg-config \
+         libssl-dev \ 
+         libboost-all-dev \
+         libevent-dev \
+         bsdmainutils \
+         vim \
+         software-properties-common && \
+         rm -rf /var/lib/apt/lists/* 
 
-ARG USE_UPNP=1
-ENV USE_UPNP=$USE_UPNP
+RUN add-apt-repository ppa:bitcoin/bitcoin && \
+    apt-get update && \
+    apt-get --no-install-recommends --yes install \
+          libdb4.8-dev \
+          libdb4.8++-dev \
+          libminiupnpc-dev && \
+          rm -rf /var/lib/apt/lists/* 
 
-EXPOSE 22333 22334
+WORKDIR /ips
 
-RUN apt-get update -y && apt-get install -y \
-    libssl-dev \
-    libboost-system-dev \
-    libboost-filesystem-dev \
-    libboost-chrono-dev \
-    libboost-program-options-dev \
-    libboost-test-dev \
-    libboost-thread-dev \
-    libminiupnpc-dev \
-    libqrencode-dev \
-    libgmp-dev \
-    libevent-dev \
-    libzmq3-dev \
-    automake \
-    pkg-config \
-    git \
-    bsdmainutils \
-&& rm -rf /var/lib/apt/lists/* \
-&& useradd -lrUm ips \
-&& git clone --depth 1 https://github.com/ipsum-network/ips.git /tmp/ips
-WORKDIR /tmp/ips
+ENV IPS_VERSION v3.0.0.2 
 
-# build
-RUN chmod +x autogen.sh share/genbuild.sh src/leveldb/build_detect_platform \
-&& ./autogen.sh \
-&& ./configure CPPFLAGS="-I/usr/local/db4/include -O2" LDFLAGS="-L/usr/local/db4/lib" \
-&& make \
-&& strip src/ipsd src/ips-cli src/ips-tx \
-&& mv src/ipsd /usr/local/bin/ \
-&& mv src/ips-cli /usr/local/bin/ \
-&& mv src/ips-tx /usr/local/bin/ \
-# clean
-&& rm -rf /tmp/ips
+RUN git clone https://github.com/ipsum-network/ips.git . && \
+    git checkout $IPS_VERSION && \
+    ./autogen.sh && \
+    ./configure && \
+    make && \
+    strip /ips/src/ipsd /ips/src/ips-cli /ips/src/ips-tx && \
+    mv /ips/src/ipsd /usr/local/bin/ && \
+    mv /ips/src/ips-cli /usr/local/bin/ && \
+    mv /ips/src/ips-tx /usr/local/bin/ &&\
+    rm -rf /ips
 
-USER ips
+VOLUME ["/root/.ips"]
 
-WORKDIR /home/ips
+EXPOSE 22331
 
-RUN mkdir -p .ips data
-
-COPY wallet/.ips/ .ips/
-
-ENTRYPOINT ["/usr/local/bin/ipsd", "-reindex", "-printtoconsole", "-logtimestamps=1", "-datadir=data", "-conf=../.desire/desire.conf", "-mnconf=../.desire/masternode.conf", "-port=22333", "-rpcport=22334"]
-CMD ["-rpcallowip=127.0.0.1", "-server=1", "-masternode=0"]
+CMD /usr/local/bin/ipsd && tail -f /root/.ips/debug.log

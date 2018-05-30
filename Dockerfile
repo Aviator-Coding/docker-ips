@@ -43,4 +43,4 @@ VOLUME ["/root/.ips"]
 
 EXPOSE 22331
 
-CMD /usr/local/bin/ipsd -daemon -txindex && tail -f /root/.ips/debug.log
+CMD /usr/local/bin/ipsd && tail -f /root/.ips/debug.log

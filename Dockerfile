@@ -14,31 +14,33 @@ RUN apt-get update && \
          libevent-dev \
          bsdmainutils \
          vim \
-         software-properties-common & \
-         rm -rf /var/lib/apt/lists/* && apt-get clean
+         software-properties-common && \
+         rm -rf /var/lib/apt/lists/* &&\
+         apt-get clean
 
 RUN add-apt-repository ppa:bitcoin/bitcoin && \
     apt-get update && \
     apt-get --no-install-recommends --yes install \
           libdb4.8-dev \
           libdb4.8++-dev \
-          libminiupnpc-dev & \
-         rm -rf /var/lib/apt/lists/* && apt-get clean
+          libminiupnpc-dev && \
+          rm -rf /var/lib/apt/lists/*  &&\
+          apt-get clean
 
 WORKDIR /ips
 
 ENV IPS_VERSION v3.1.0.0
 
-RUN git clone https://github.com/ipsum-network/ips.git . && \
+RUN git clone -b master https://github.com/ipsum-network/ips.git . && \
     git checkout $IPS_VERSION && \
     ./autogen.sh && \
     ./configure && \
     make &&\
     strip /ips/src/ipsd /ips/src/ips-cli && \
     mv /ips/src/ipsd /usr/local/bin/ && \
-    mv /ips/src/ips-cli /usr/local/bin/ ** \
+    mv /ips/src/ips-cli /usr/local/bin/ && \
     # clean
-    rm -rf /ips
+    rm -rf /ips 
 
 VOLUME ["/root/.ips"]
 

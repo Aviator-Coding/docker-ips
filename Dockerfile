@@ -14,14 +14,16 @@ RUN apt-get update && \
          libevent-dev \
          bsdmainutils \
          vim \
-         software-properties-common
+         software-properties-common & \
+         rm -rf /var/lib/apt/lists/* && apt-get clean
 
 RUN add-apt-repository ppa:bitcoin/bitcoin && \
     apt-get update && \
     apt-get --no-install-recommends --yes install \
           libdb4.8-dev \
           libdb4.8++-dev \
-          libminiupnpc-dev 
+          libminiupnpc-dev & \
+         rm -rf /var/lib/apt/lists/* && apt-get clean
 
 WORKDIR /ips
 
@@ -32,10 +34,9 @@ RUN git clone https://github.com/ipsum-network/ips.git . && \
     ./autogen.sh && \
     ./configure && \
     make &&\
-    strip src/ipsd src/ips-cli src/ips-tx && \
-    mv src/ipsd /usr/local/bin/ && \
-    mv src/ips-cli /usr/local/bin/ && \
-    mv src/ips-tx /usr/local/bin/ && \
+    strip /ips/src/ipsd /ips/src/ips-cli && \
+    mv /ips/src/ipsd /usr/local/bin/ && \
+    mv /ips/src/ips-cli /usr/local/bin/ ** \
     # clean
     rm -rf /ips
 
@@ -43,4 +44,4 @@ VOLUME ["/root/.ips"]
 
 EXPOSE 22331
 
-CMD /usr/local/bin/ipsd && tail -f /root/.ips/debug.log
+CMD exec ipsd && tail -f /root/.ips/debug.log

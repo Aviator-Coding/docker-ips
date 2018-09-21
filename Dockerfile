@@ -1,49 +1,21 @@
-FROM ubuntu:16.04
+FROM    frolvlad/alpine-glibc
+LABEL   maintainer="Aviator" \
+        discord="Aviator#1024"
 
-RUN apt-get update && \
-    apt-get --no-install-recommends --yes install \
-         git \
-         automake \
-         build-essential \
-         libtool \
-         autotools-dev \
-         autoconf \
-         pkg-config \
-         libssl-dev \ 
-         libboost-all-dev \
-         libevent-dev \
-         bsdmainutils \
-         vim \
-         software-properties-common && \
-         rm -rf /var/lib/apt/lists/* &&\
-         apt-get clean
+ENV VERSION=v3.1.0.0
+ENV GITHUB_AUTOR="ipsum-network"
+ENV GITHUB_REPO=ips
+ENV GITHUB_TAR=ips-3.1.0-linux.tar.gz
 
-RUN add-apt-repository ppa:bitcoin/bitcoin && \
-    apt-get update && \
-    apt-get --no-install-recommends --yes install \
-          libdb4.8-dev \
-          libdb4.8++-dev \
-          libminiupnpc-dev && \
-          rm -rf /var/lib/apt/lists/*  &&\
-          apt-get clean
-
-WORKDIR /ips
-
-ENV IPS_VERSION v3.1.0.0
-
-RUN git clone -b master https://github.com/ipsum-network/ips.git . && \
-    git checkout $IPS_VERSION && \
-    ./autogen.sh && \
-    ./configure && \
-    make &&\
-    strip /ips/src/ipsd /ips/src/ips-cli && \
-    mv /ips/src/ipsd /usr/local/bin/ && \
-    mv /ips/src/ips-cli /usr/local/bin/ && \
-    # clean
-    rm -rf /ips 
+RUN apk add --no-cache curl && \
+    curl -L https://github.com/$GITHUB_AUTOR/$GITHUB_REPO/releases/download/$VERSION/$GITHUB_TAR | tar zx -C /tmp &&\
+    find /tmp -name "ips-cli" -exec cp {} /usr/local/bin \; &&\ 
+    find /tmp -name "ipsd" -exec cp {} /usr/local/bin \; &&\
+    rm -r /tmp/* &&\
+    apk del curl
 
 VOLUME ["/root/.ips"]
 
-EXPOSE 22331
+EXPOSE 22331/tcp
 
-CMD exec ipsd && tail -f /root/.ips/debug.log
+CMD ipsd -printtoconsole

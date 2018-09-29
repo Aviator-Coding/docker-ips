@@ -2,7 +2,7 @@
 ## Dockercontainer for IPSUM Wallet
 
 Run Container:
->```docker run --name ips-masternode-01 --restart=always -d --net mn_net -p xxx.xxx.xxx.xxx:1947:1947 -p xxx.xxx.xxx.xx:1948:1948  -v /masternode/ips_01/.ips:/root/.ips aviator86/goa-docker```
+>```docker run --name ips-masternode-01 --restart=always -d --net mn_net -p xxx.xxx.xxx.xxx:1947:1947 -p xxx.xxx.xxx.xx:1948:1948  -v /masternode/ips_01/.ips:/root/.ips aviator86/ips-docker```
 
 > /masternode/ips_01/.ips - is the location where you store your config on the host  
 --name  ips-masternode-01 - is the tag which will show up in the Container list name it whatever you want
